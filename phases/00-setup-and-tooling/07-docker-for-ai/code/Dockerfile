@@ -48,4 +48,4 @@ VOLUME ["/workspace", "/models"]
 
 EXPOSE 8888
 
-CMD ["python"]
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
