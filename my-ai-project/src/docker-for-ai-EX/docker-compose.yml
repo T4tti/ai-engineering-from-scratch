@@ -1,11 +1,19 @@
+# Docker-compose file 
+# run ai-env:runtime and qdrant at the same time using docker-compose
+
+
 services:
   ai-runtime:
     build:
       context: .
       dockerfile: dockerfile
-    command: ["python", "-c", "import time; time.sleep(2147483647)"]
     volumes:
       - ../:/workspace
+    ports:
+    - "5000:5000"
+    stdin_open: true
+    tty: true
+    command: /bin/bash
 
   qdrant:
     image: qdrant/qdrant:v1.12.5
