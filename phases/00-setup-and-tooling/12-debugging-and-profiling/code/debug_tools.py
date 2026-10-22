@@ -171,12 +171,13 @@ def demo_nan_detection():
     )
 
     x = torch.randn(4, 784)
+    
     target = torch.randint(0, 10, (4,))
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
 
     optimizer.zero_grad()
-    output = model(x)
+    output = model(x) / 0
     loss = criterion(output, target)
     loss.backward()
     print(f"  Normal loss: {loss.item():.4f}")

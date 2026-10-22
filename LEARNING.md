@@ -40,6 +40,19 @@ Học toàn diện AI Engineering, từ nền tảng toán học, ML, deep learn
 ## Progress log
 | Date | Lesson | Quiz | Note |
 |------|--------|------|------|
+| 2026-10-16 | 00/01-dev-environment | 5/5 | Cấu hình môi trường Python 3.11+, PyTorch CUDA, kiểm tra GPU sẵn sàng |
+| 2026-10-16 | 00/02-git-and-collaboration | 5/5 | Quy trình Git branching, atomic commit, quản lý repo và code bài học |
+| 2026-10-17 | 00/03-gpu-setup-and-cloud | 5/5 | Kiểm tra GPU và VRAM với nvidia-smi, cấu hình cloud GPU instances |
+| 2026-10-17 | 00/04-apis-and-keys | 5/5 | Quản lý API key qua biến môi trường (.env), xử lý rate limit và retry |
+| 2026-10-17 | 00/05-jupyter-notebooks | 5/5 | Sử dụng JupyterLab, kết nối ipykernel trong venv, export code sang script |
+| 2026-10-18 | 00/06-python-environments | 5/5 | Quản lý virtual environment với venv/uv, giải quyết xung đột dependency |
+| 2026-10-18 | 00/07-docker-for-ai | 5/5 | Đóng gói container với Dockerfile, NVIDIA Container Toolkit (--gpus all) |
+| 2026-10-18 | 00/08-editor-setup | 5/5 | Cấu hình VS Code / Cursor với Python LSP, linter, launch debugger |
+| 2026-10-19 | 00/09-data-management | 5/5 | Quản lý dataset lớn, streaming dữ liệu, lưu trữ định dạng Parquet/HDF5 |
+| 2026-10-19 | 00/10-terminal-and-shell | 5/5 | Thành thạo Bash shell, pipeline lệnh, dùng tmux cho tiến trình huấn luyện |
+| 2026-10-20 | 00/11-linux-for-ai | 5/5 | Quản trị Linux/WSL2, giám sát tài nguyên (htop, nvtop), tối ưu bộ nhớ |
+| 2026-10-20 | 00/12-debugging-and-profiling | 2/3 | Bắt silent bugs (broadcasting, NaN loss), lưu ý nút thắt data loading |
 
 ## Review queue
+- `00/12-debugging-and-profiling`: Nút thắt cổ chai nạp dữ liệu (DataLoader num_workers vs GPU computation)
 
