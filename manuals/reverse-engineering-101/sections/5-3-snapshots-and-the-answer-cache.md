@@ -2,17 +2,17 @@
 
 > A snapshot caches exact answers under a query id bound to the target digest and the profile digest, and the dispatch of one mutating call turns the cache off.
 
-The capture ran `rea function fixtures/ledger-arm64-O1 NAME --provider ghidra` four times, once per function, and each run took between 7 and 8 seconds (`capture/out/00-commands.txt`). Every run imported the same 33,872 bytes into a fresh Ghidra project and threw the project away. You want the second question about the same file to be free. When you finish this section, you can say which calls a snapshot can answer and build the query id by hand. You can also predict when rea refuses to replay or to save.
+The capture ran `rea function fixtures/ledger-arm64-O1 NAME --provider ghidra` four times, once per function, and each run took between 7.9 and 9.0 seconds ([the capture](manuals/reverse-engineering-101/capture/out/00-commands.txt)). Every run imported the same 33,872 bytes into a fresh Ghidra project and threw the project away. You want the second question about the same file to be free. When you finish this section, you can say which calls a snapshot can answer and build the query id by hand. You can also predict when rea refuses to replay or to save.
 
 ## Three things called a snapshot
 
 The word covers three things in rea, and only one of them is a cache you can keep.
 
-**Target snapshot:** the private copy of the input that the Ghidra launcher imports with `-readOnly` and `-deleteProject`. It is deleted when the session closes, and nothing of the analysis survives it: "Each new provider session still imports the target into a fresh temporary project." {{mcp Ghidra first-query deadlines and recovery}}
+**Target snapshot:** the private copy of the input that the Ghidra launcher imports with `-readOnly` and `-deleteProject`. It is deleted when the session closes, and nothing of the analysis survives it. Every new provider session imports the target again into a new temporary project {{mcp Ghidra first-query deadlines and recovery}}.
 
 **Analysis snapshot cache:** the in-memory table of one session, `AnalysisSnapshotCache`, which holds up to 10,000 entries for one target identity. This is the cache this section is about.
 
-**Snapshot file:** the JSON file that `close_binary` writes and `open_binary` reads. It holds the target identity, the provider binding, the cache entries, and the session's Evidence bundle. The CLI documentation says what it is and what it is not: "These are cached observations, not a saved provider database: only eligible exact queries can reuse a result, and new or live queries can still require provider startup." {{cli Save and reuse analysis snapshots}}
+**Snapshot file:** the JSON file that `close_binary` writes and `open_binary` reads. It holds the target identity, the provider binding, the cache entries, and the session's Evidence bundle. The CLI documentation says what it is and what it is not. It holds cached observations, not a saved provider database. Only an exact query that qualifies can reuse a result, and a new or live query can still start the provider {{cli Save and reuse analysis snapshots}}.
 
 ## The query id
 
@@ -39,13 +39,13 @@ note: The profile as the binary_overview record carries it. Twenty of the twenty
     …
     "analyzer_preset": "ghidra-default"
   },
-  "digest": "966e6016…"
+  "digest": "3fc72c9b…"
 },
 ```
 
 The parameters are version strings, one per observation contract that the Ghidra adapter makes. The digest is the SHA-256 of the canonical JSON of provider and parameters. A cache entry matches only when the binding's provider and digest equal the selected profile's. A release that moves `function_references` from `-v2` to `-v3` changes the digest. Every entry made under the old digest then stops matching. That is what exact means in the thesis of this section.
 
-Version 6.5.0 is such a release. It added four contracts and moved `function_boundary_observations` from `ghidra-terminal-call-limitations-v1` to `ghidra-function-boundary-limitations-v3`. No 6.4.0 snapshot entry matches a 6.5.0 session. One Ghidra session made all eight rows of the bundle summary, so all of them carry the digest `966e6016…` ([export and import](#s-evidence-bundles-export-and-import)).
+Version 6.7.0 is such a release. For this Mach-O target the parameter list kept its 25 names, and two values moved. `instruction_references` went from `exact-address-incoming-v1` to `exact-address-incoming-without-synthetic-entry-v2`. `function_boundary_observations` went from `ghidra-function-boundary-limitations-v3` to `-v4`. The digest went from `966e6016…` to `3fc72c9b…`, so no 6.5.0 snapshot entry matches a 6.7.0 session. One Ghidra session made all eight rows of the bundle summary, so all of them carry the digest `3fc72c9b…` ([export and import](#s-evidence-bundles-export-and-import)).
 
 ## Which calls the cache answers
 
@@ -63,19 +63,21 @@ The replayed record names the path of the target that is open now. The function 
 
 On a miss the provider runs, and the result is bound to the profile and the target. An Evidence record is then created and recorded, and a cache entry is stored under the id.
 
-The capture shows no replay, because no two of its 25 MCP calls had the same operation and parameters. The first Ghidra-backed call after `open_binary` was `list_procedures`, and it took between 6 and 7 seconds while the headless import ran. Every later call on that target took under 100 ms (`capture/out/10-mcp-session.txt`). Those later calls were fast because the bridge was already running, not because of the cache. A repeat of `analyze_function` with `"procedure": "_percent_change"` would have been the first replay.
+The capture shows no replay, because no two of its 25 MCP calls had the same operation and parameters. The first Ghidra-backed call after `open_binary` was `list_procedures`, and it took between 6 and 7 seconds while the headless import ran. Every later analysis call on that target took under 100 ms ([the capture](manuals/reverse-engineering-101/capture/out/10-mcp-session.txt)). Those later calls were fast because the bridge was already running, not because of the cache. A repeat of `analyze_function` with `"procedure": "_percent_change"` would have been the first replay.
 
 ```figure
 id: fig-5-4
 kind: decision
 title: one analyze_function call through the snapshot cache
 claim: A cacheable call becomes a query id over target, binding, operation, and parameters, and a mutating call turns the cache off before it reaches Ghidra.
-caption: Read top to bottom. The dashed reply is a replay, and the solid call is a provider run. The dashed amber arrow is the state change that a mutating call makes before its dispatch. Values are from capture/out/10-mcp-09-analyze-function-percent-change-O1.json and 10-mcp-04-binary-session.json.
+caption: Read top to bottom. The dashed reply is a replay, and the solid call is a provider run. The dashed amber arrow is the state change that a mutating call makes before its dispatch. Values are from the function capture and the session capture.
 ```
 
 ## Save and load
 
-`close_binary` takes `snapshot_path` and `overwrite`. `closeWithSnapshot` drains the calls in progress, exports the snapshot, writes the file, and closes the provider. Its receipt adds `primitive_entries`, `workflow_entries`, and `evidence_records`. `open_binary` takes `snapshot_path` too, reads the file before it opens the target, and imports the entries into the new session. The capture closed both targets without a path, so its two `close_binary` results are `null` (`10-mcp-15-close-binary-O1.json`, `10-mcp-25-close-binary-O2.json`). On the CLI the flag is `--snapshot`: "An exact CLI cache hit is normally read before starting a provider process." {{cli Save and reuse analysis snapshots}} On Windows the Ghidra provider can start first, because it must admit the source file.
+`close_binary` takes `snapshot_path` and `overwrite`. `closeWithSnapshot` drains the calls in progress, exports the snapshot, writes the file, and closes the provider. Its receipt adds `primitive_entries`, `workflow_entries`, and `evidence_records`. `open_binary` takes `snapshot_path` too, reads the file before it opens the target, and imports the entries into the new session. The capture closed both targets without a path, so its two `close_binary` results are `null` (`10-mcp-15-close-binary-O1.json`, `10-mcp-25-close-binary-O2.json`). On the CLI the flag is `--snapshot`.
+
+An exact cache hit is normally read before rea starts a provider process {{cli Save and reuse analysis snapshots}}. On Windows the Ghidra provider can start first, because it must admit the source file.
 
 Loading a file is a full check. The entries must be in canonical id order, and every query id is recomputed and must match. No id appears twice. Every entry must have an Evidence record in the bundle with the same profile and the same result. A bundle record for another target fails the whole file.
 
@@ -112,7 +114,9 @@ note: Two of the three limitations are cut.
 
 Before rea sends such a call to the provider, `BinarySession` calls `invalidateSnapshot`. The cache is emptied and a flag is set. From then on every lookup returns nothing, every new result is not stored, and an export fails with "Analysis snapshots are unavailable because analysis metadata may have changed". The error adds the way out: export the Evidence with `export_evidence_bundle`, close the target without a snapshot, and reopen it. An import after a mutation is refused the same way.
 
-At 6.5.0 the order is: invalidate, then call the provider. A failed reply cannot prove that the write did not reach Ghidra. So a mutating call that fails also turns the cache off. The 6.4.0 release used the other order and invalidated only after a successful call. The CLI documentation states the rule: "Dispatching a metadata write invalidates the active session's snapshot cache, even if its reply fails: the provider may already have applied the write." {{cli Save and reuse analysis snapshots}}
+At 6.7.0 the order is: invalidate, then call the provider. A failed reply cannot prove that the write did not reach Ghidra. So a mutating call that fails also turns the cache off. The 6.4.0 release used the other order and invalidated only after a successful call.
+
+The CLI documentation states the rule. A metadata write clears the snapshot cache of the active session, even when its reply fails. The provider can already have applied the write {{cli Save and reuse analysis snapshots}}.
 
 ```takeaways
 - Repeat a query with the same parameters to get the cached answer, and read the added limitation.
@@ -121,4 +125,4 @@ At 6.5.0 the order is: invalidate, then call the provider. A failed reply cannot
 - Treat a snapshot as answers to past questions, never as a saved Ghidra project.
 ```
 
-Sources: capture/README.md; capture/out/00-commands.txt, capture/out/05-analyze-arm64-O1.json, capture/out/10-mcp-04-binary-session.json, capture/out/10-mcp-09-analyze-function-percent-change-O1.json, capture/out/10-mcp-15-close-binary-O1.json, capture/out/10-mcp-25-close-binary-O2.json, capture/out/10-mcp-session.txt; rea 6.5.0 at 3b79af2: src/domain/analysisSnapshot.ts, src/domain/analysisProfile.ts, src/domain/evidence.ts, src/application/binary/AnalysisSnapshotCache.ts, src/application/binary/BinarySession.ts, src/application/binary/BinarySessionExecution.ts, src/application/binary/BinarySessionRecords.ts, src/application/JsonFiles.ts, src/server/registerCloseLifecycleTool.ts, src/server/registerSessionTools.ts, src/ghidra/GhidraLauncher.ts, src/ghidra/GhidraAnalysisProfile.ts, src/ghidra/GhidraProviderCapabilities.ts; rea docs/cli.md, rea docs/mcp-contracts.md
+Sources: capture/README.md; capture/out/00-commands.txt, capture/out/05-analyze-arm64-O1.json, capture/out/10-mcp-04-binary-session.json, capture/out/10-mcp-09-analyze-function-percent-change-O1.json, capture/out/10-mcp-15-close-binary-O1.json, capture/out/10-mcp-25-close-binary-O2.json, capture/out/10-mcp-session.txt, capture/fixtures/bundle-rea-6.5.0-O1.json; rea 6.7.0 at 27dc42d: src/domain/analysisSnapshot.ts, src/domain/analysisProfile.ts, src/domain/evidence.ts, src/application/binary/AnalysisSnapshotCache.ts, src/application/binary/BinarySession.ts, src/application/binary/BinarySessionExecution.ts, src/application/binary/BinarySessionRecords.ts, src/application/JsonFiles.ts, src/server/registerCloseLifecycleTool.ts, src/server/registerSessionTools.ts, src/ghidra/GhidraLauncher.ts, src/ghidra/GhidraAnalysisProfile.ts, src/ghidra/GhidraProviderCapabilities.ts; rea docs/cli.md, rea docs/mcp-contracts.md

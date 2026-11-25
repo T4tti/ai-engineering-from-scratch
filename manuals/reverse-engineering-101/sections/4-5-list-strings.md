@@ -61,7 +61,7 @@ The bridge walks every defined data item in the program and keeps the ones with 
 label: what an empty result proves
 source: ghidra §Admitted inventory semantics
 ---
-"Packed or undefined literals, including Rust strings, may be absent; an empty result does not prove text is absent."
+Packed or undefined literals, Rust strings among them, can be missing from the list. An empty result does not prove that the text is not in the file.
 ```
 
 `termination` has two values. `missing` means a string type that needs a null byte has none. `present_or_not_required` covers everything else, because Ghidra cannot tell a present terminator from a layout that needs none. `byte_length` counts the terminator: `F` is two bytes.
@@ -110,4 +110,4 @@ The capture target has none of those, so the 39 items are the whole file. For a 
 - Read `referenced_strings` as the text a function reaches through a load. Expect the function to use more.
 ```
 
-Sources: capture/out/10-mcp-08-list-strings.json, capture/out/04-inspect-macho.json, capture/out/05-analyze-arm64-O1.json, capture/out/10-mcp-12-analyze-function-grade-label-O1.json, capture/fixtures/ledger-arm64-O1, capture/README.md; rea 6.5.0 at 3b79af2: bridge/ghidra/ReaGhidraBridge.java, src/ghidra/GhidraProviderCapabilities.ts; rea docs/ghidra-provider.md
+Sources: capture/out/10-mcp-08-list-strings.json, capture/out/04-inspect-macho.json, capture/out/05-analyze-arm64-O1.json, capture/out/10-mcp-12-analyze-function-grade-label-O1.json, capture/fixtures/ledger-arm64-O1, capture/README.md; rea 6.7.0 at 27dc42d: bridge/ghidra/ReaGhidraBridge.java, src/ghidra/GhidraProviderCapabilities.ts; rea docs/ghidra-provider.md

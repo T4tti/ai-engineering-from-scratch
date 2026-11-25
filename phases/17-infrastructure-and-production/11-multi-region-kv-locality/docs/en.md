@@ -3,7 +3,7 @@
 > Round-robin load balancing is actively harmful for cached LLM inference. A request that does not land on the node holding its prefix pays full prefill cost — roughly 800 ms at P50 on a long prompt versus ~80 ms with a cache hit. In 2026 the production pattern is a cache-aware router (vLLM Router in Rust, llm-d router) that consumes KV-cache events and routes on prefix-hash match. Recent research (GORGO) makes cross-region network latency an explicit term in the routing objective. Commercial "cross-region inference" offerings (Bedrock cross-region inference, GKE multi-cluster gateways) treat inference as opaque — they handle availability, not TTFT. JPMorgan and Mayo Clinic ran us-east-1 failover in Nov 2024 at ~22 minutes. The DR reality: 32% of LLM DR failures are because teams backed up weights but forgot tokenizer files or quantization configs.
 
 **Type:** Learn
-**Languages:** Python (stdlib, toy prefix-cache-aware router simulator)
+**Languages:** Python, TypeScript (stdlib, toy prefix-cache-aware router simulator)
 **Prerequisites:** Phase 17 · 04 (vLLM Serving), Phase 17 · 06 (SGLang RadixAttention)
 **Time:** ~60 minutes
 
@@ -51,7 +51,7 @@ Inter-region RTT:
 - us-east-1 ↔ eu-west-1: ~75 ms.
 - us-east-1 ↔ ap-southeast-1: ~220 ms.
 
-If routing takes a request from us-east-1 to a hot prefix in ap-southeast-1, the saved prefill (800 → 80 ms) is dwarfed by 440 ms round-trip. GORGO (2026 research) makes this explicit — minimize `prefill_time + network_latency` jointly, not prefill alone. Often the answer is to keep routing regional except on massive multi-MB prefixes where prefill dominates.
+If routing takes a request from us-east-1 to a hot prefix in ap-southeast-1, the saved prefill (800 → 80 ms, so 720 ms) shrinks to about 500 ms once the ~220 ms RTT is paid, and the margin disappears if the remote region queues the request or has already evicted the prefix. GORGO (2026 research) makes this explicit — minimize `prefill_time + network_latency` jointly, not prefill alone. Often the answer is to keep routing regional except on massive multi-MB prefixes where prefill dominates.
 
 ### Commercial "cross-region inference" does not help here
 

@@ -131,7 +131,7 @@ Every function operation takes a `procedure` string. The rule for reading it:
 label: names before addresses
 source: native §Exact CLI selectors
 ---
-"an exact database symbol name takes precedence over a bare hexadecimal address"
+When a selector matches an exact symbol name in the database, the name wins over a bare hexadecimal address.
 ```
 
 A string with a `0x` prefix or an address-space prefix is an address. Any other string is tried as a symbol name first. A name that matches more than one function fails with `ambiguous` and the list of entry addresses. A name that matches nothing fails with `not_found`, which [section 4.6](#s-analyze-function-and-pseudocode) shows as the MCP error `invalid_request`.
@@ -143,4 +143,4 @@ A string with a `0x` prefix or an address-space prefix is an address. Any other 
 - Treat `end` in `body.ranges` as inclusive and every other `end` as exclusive.
 ```
 
-Sources: capture/out/10-mcp-05-list-procedures.json, capture/out/06-function-grade.json, capture/out/10-mcp-09-analyze-function-percent-change-O1.json, capture/out/10-mcp-11-analyze-function-total-O1.json, capture/out/10-mcp-12-analyze-function-grade-label-O1.json, capture/out/04-inspect-macho.json; rea 6.5.0 at 3b79af2: bridge/ghidra/ReaGhidraBridge.java, src/ghidra/GhidraProviderCapabilities.ts; rea docs/native-investigation.md
+Sources: capture/out/10-mcp-05-list-procedures.json, capture/out/06-function-grade.json, capture/out/10-mcp-09-analyze-function-percent-change-O1.json, capture/out/10-mcp-11-analyze-function-total-O1.json, capture/out/10-mcp-12-analyze-function-grade-label-O1.json, capture/out/04-inspect-macho.json; rea 6.7.0 at 27dc42d: bridge/ghidra/ReaGhidraBridge.java, src/ghidra/GhidraProviderCapabilities.ts; rea docs/native-investigation.md

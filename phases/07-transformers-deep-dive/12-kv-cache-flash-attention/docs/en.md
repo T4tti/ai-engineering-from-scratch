@@ -3,7 +3,7 @@
 > Training is parallel and FLOP-bound. Inference is serial and memory-bound. Different bottleneck, different tricks.
 
 **Type:** Build
-**Languages:** Python
+**Languages:** Python, Rust
 **Prerequisites:** Phase 7 · 02 (Self-Attention), Phase 7 · 05 (Full Transformer), Phase 7 · 07 (GPT)
 **Time:** ~75 minutes
 
@@ -26,32 +26,32 @@ By 2026 both are universal. Every production inference stack (vLLM, TensorRT-LLM
 
 ### KV cache math
 
-Per decoder layer, per token, per head:
+Per decoder layer, per token, across all KV heads:
 
 ```
-bytes_per_token_per_layer = 2 * d_head * dtype_size
+bytes_per_token_per_layer = 2 * n_kv_heads * d_head * dtype_size
                           ^
                           K and V
 ```
 
-For a 7B model with 32 layers, 32 heads, d_head=128, fp16:
+For a 7B model with 32 layers, 32 heads (all used for K and V), d_head=128, fp16:
 
 ```
-per token per layer = 2 * 128 * 2 = 512 bytes
-per token (32 layers) = 16 KB
-per 32K context = 512 MB
+per token per layer = 2 * 32 * 128 * 2 = 16384 bytes (16 KiB)
+per token (32 layers) = 512 KiB
+per 32K context = 16 GiB
 ```
 
 For Llama 3 70B (80 layers, d_head=128, GQA with 8 KV heads):
 
 ```
-per token per layer = 2 * 8 * 128 * 2 = 4096 bytes (4 KB)
-per 32K context = 10.4 GB
+per token per layer = 2 * 8 * 128 * 2 = 4096 bytes (4 KiB)
+per 32K context = 10 GiB
 ```
 
-That 10 GB is why Llama 3 70B at 128K context needs most of a 40 GB A100 just for KV cache at batch size 1.
+That 10 GiB at 32K grows to 40 GiB at 128K, which is the whole of a 40 GB A100 just for KV cache at batch size 1.
 
-**GQA is the KV-cache win.** MHA with 64 heads would be 32 GB. MLA compresses even further.
+**GQA is the KV-cache win.** MHA with 64 KV heads would be 8x larger, about 80 GiB at 32K. MLA compresses even further.
 
 Drag the dimensions and watch the cache size move. Push the sequence length or batch up and see how fast it blows past a single GPU:
 
@@ -124,7 +124,11 @@ flash-attention-memory
 
 ## Build It
 
-See `code/main.py`. We implement:
+```figure
+iso-machine {"machine":"kv-cache"}
+```
+
+See `code/main.py`, or its Rust port `code/main.rs`. To run the Rust version: `rustc --edition 2021 -O code/main.rs -o /tmp/lesson && /tmp/lesson`. We implement:
 
 1. A naive $O(N^2)$ incremental decoder.
 2. A $O(N)$ KV-cached decoder.
@@ -172,9 +176,9 @@ def tiled_softmax_dot(q, K, V, tile=4):
 
 Bit-identical output to `softmax(qK) V` in one shot, but at any time the working set is a `tile × d_head` block, not the full `N × d_head`.
 
-### Step 3: compare naive vs cached decoding on 100-token generation
+### Step 3: compare naive vs cached decoding
 
-Count attention operations. Naive: $O(N^2)$ = 5050. Cached: $O(N)$ = 100. The code prints both.
+Count attention operations. Both decoders make the same query-key comparisons: step `t` attends over `t` tokens, so the total is 1 + 2 + ... + N = N(N+1)/2. The code uses N = 10 and prints 55 for each decoder. For a 100-token generation, both make 5050 comparisons. The cache saves the K and V projections. Without a cache, every step computes K and V again for the full prefix, so a 100-token generation computes 5050 token states. With the cache, each token's K and V are computed once, so the same generation computes 100 token states.
 
 ## Use It
 

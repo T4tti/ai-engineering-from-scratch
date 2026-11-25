@@ -3,7 +3,7 @@
 > A decision tree is just a flowchart. But a forest of them is one of the most powerful tools in ML.
 
 **Type:** Build
-**Language:** Python
+**Languages:** Python, TypeScript
 **Prerequisites:** Phase 1 (Lessons 09 Information Theory, 06 Probability)
 **Time:** ~90 minutes
 
@@ -104,7 +104,7 @@ This greedy approach does not guarantee the globally optimal tree. Finding the o
 
 ### Stopping conditions
 
-Without stopping conditions, the tree grows until every leaf is pure (one sample per leaf). This perfectly memorizes the training data and generalizes terribly.
+Without stopping conditions, the tree grows until every leaf is pure or no split can separate its samples, often down to a single sample per leaf. This perfectly memorizes the training data and generalizes terribly.
 
 **Pre-pruning** stops the tree before it fully grows:
 - Maximum depth: stop splitting when the tree reaches a set depth
@@ -412,7 +412,7 @@ class RandomForest:
         return predictions
 ```
 
-See `code/trees.py` for the complete implementation with all helper methods.
+See `code/trees.py` for the complete implementation with all helper methods. `code/trees.ts` is a TypeScript port with the same functions and demos. Run it with `npx tsx code/trees.ts`.
 
 ## Use It
 

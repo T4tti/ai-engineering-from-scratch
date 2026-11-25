@@ -3,7 +3,7 @@
 > Sampling is how AI explores the space of possibilities.
 
 **Type:** Build
-**Language:** Python
+**Languages:** Python, TypeScript
 **Prerequisites:** Phase 1, Lessons 06-07 (Probability, Bayes' Theorem)
 **Time:** ~120 minutes
 
@@ -117,7 +117,8 @@ Algorithm:
   3. If u < p(x) / (M * q(x)), accept x
   4. Otherwise, reject and go to step 1
 
-Acceptance rate = 1/M
+Acceptance rate = Z/M, where Z is the integral of p(x)
+                (Z = 1, so the rate is 1/M, when p is normalized)
 ```
 
 The tighter the bound $M$, the higher the acceptance rate. In low dimensions (1-3), rejection sampling works well. In high dimensions, the acceptance rate drops exponentially because most of the proposal volume gets rejected. This is the curse of dimensionality for rejection sampling.
@@ -607,6 +608,8 @@ def gumbel_softmax(logits, temperature):
 Show how decreasing temperature makes the output approach a one-hot vector.
 
 Full implementations with all visualizations are in `code/sampling.py`.
+
+The TypeScript port is in `code/sampling.ts`. It uses its own seeded random generator, so its random numbers differ from the Python output.
 
 ## Use It
 

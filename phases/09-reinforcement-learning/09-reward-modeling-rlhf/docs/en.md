@@ -3,7 +3,7 @@
 > Humans cannot write a reward function for "good assistant response," but they can compare two responses and pick the better one. Fit a reward model to those comparisons, then RL the language model against it. Christiano 2017. InstructGPT 2022. The recipe that turned GPT-3 into ChatGPT. In 2026 it is mostly being replaced by DPO — but the mental model stays.
 
 **Type:** Build
-**Languages:** Python
+**Languages:** Python, TypeScript
 **Prerequisites:** Phase 5 · 05 (Sentiment), Phase 9 · 08 (PPO)
 **Time:** ~45 minutes
 
@@ -113,7 +113,7 @@ def rlhf_step(theta, ref, w, prompt, rng, eps=0.2, beta=0.1, lr=0.05):
 
 ### Step 4: monitor the KL
 
-Track mean $\mathrm{KL}(\pi_\theta \Vert \pi_{\text{ref}})$ every update. If it creeps past `~5-10` the policy has drifted far from $\pi_{\text{SFT}}$ — lower $\beta$ is rising or reward hacking is starting. This is the top diagnostic in real RLHF.
+Track mean $\mathrm{KL}(\pi_\theta \Vert \pi_{\text{ref}})$ every update. If it creeps past `~5-10` (per-response KL in nats, summed over tokens, the unit TRL logs) the policy has drifted far from $\pi_{\text{SFT}}$: either $\beta$ is too low (raise it to pull the policy back) or reward hacking is starting. This is the top diagnostic in real RLHF.
 
 ### Step 5: the production recipe with TRL
 

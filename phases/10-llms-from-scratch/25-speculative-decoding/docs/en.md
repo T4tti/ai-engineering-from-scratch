@@ -85,7 +85,7 @@ EAGLE-1 changes:
 
 EAGLE-2 (2024) adds dynamic tree topology: the tree grows wider where the draft is uncertain and stays narrow where it is confident. Raises `α_effective` without increasing verify cost.
 
-EAGLE-3 (Li et al. 2025, "EAGLE-3: Scaling up Inference Acceleration of Large Language Models via Training-Time Test") removes the fixed top-layer feature dependency and trains the draft with a new "test-time simulation" loss — the draft is trained on outputs that match the target's test-time distribution rather than teacher-forced training distribution. Acceptance rate rises from 0.75 (EAGLE-2) to 0.82 (EAGLE-3), and mean tokens/verify from 3.0 to 4.5.
+EAGLE-3 (Li et al. 2025, "EAGLE-3: Scaling up Inference Acceleration of Large Language Models via Training-Time Test") removes the fixed top-layer feature dependency and trains the draft with a new "test-time simulation" loss — the draft is trained on outputs that match the target's test-time distribution rather than teacher-forced training distribution. Acceptance rate rises from 0.75 (EAGLE-2) to 0.82 (EAGLE-3), and mean tokens/verify from 3.0 to 4.5. These figures come from one reference setup. Acceptance depends on the model pair, the draft tree and the traffic: Phase 10 · 15 quotes 0.88 to 0.92 per accepted-path token on chat benchmarks, and Phase 17 · 05 plans with 0.6 to 0.8 on production general chat.
 
 ### Tree Attention Verification
 
@@ -132,13 +132,13 @@ def speculative_step(p_target, q_draft, K, temperature=1.0):
     """One round of speculative decoding. Returns list of accepted tokens."""
     # 1. Draft K tokens
     draft_tokens = []
-    q_probs = []
+    q_dists = []
     state = draft_state_init()
     for _ in range(K):
         probs = softmax(q_draft(state) / temperature)
         t = np.random.choice(len(probs), p=probs)
         draft_tokens.append(t)
-        q_probs.append(probs[t])
+        q_dists.append(probs)
         state = draft_step(state, t)
 
     # 2. Target computes p at every drafted position + 1 extra
@@ -148,10 +148,10 @@ def speculative_step(p_target, q_draft, K, temperature=1.0):
     accepted = []
     for k, tok in enumerate(draft_tokens):
         r = np.random.uniform()
-        if r < p_probs_all[k][tok] / q_probs[k]:
+        if r < p_probs_all[k][tok] / q_dists[k][tok]:
             accepted.append(tok)
         else:
-            residual = np.maximum(p_probs_all[k] - q_probs[k], 0)
+            residual = np.maximum(p_probs_all[k] - q_dists[k], 0)
             residual /= residual.sum()
             accepted.append(np.random.choice(len(residual), p=residual))
             return accepted

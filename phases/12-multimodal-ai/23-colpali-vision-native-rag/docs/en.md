@@ -3,7 +3,7 @@
 > Traditional RAG parses PDFs into text, splits into chunks, embeds chunks, stores vectors. Every step loses signal: OCR drops chart data, chunking breaks table rows, text embeddings ignore figures. ColPali (Faysse et al., July 2024) asked the simpler question: why extract text at all? Embed the page image directly via PaliGemma, use ColBERT-style late interaction for retrieval, and keep all the layout, figures, fonts, and formatting signal the document carries. Published benchmarks: 20-40% better end-to-end accuracy than text-RAG on visually-rich documents. ColQwen2, ColSmol, and VisRAG extended the pattern. This lesson reads the vision-native RAG thesis and builds a tiny ColPali-like indexer.
 
 **Type:** Build
-**Languages:** Python (stdlib, multi-vector indexer + MaxSim scorer)
+**Languages:** Python (stdlib, multi-vector indexer + MaxSim scorer), TypeScript
 **Prerequisites:** Phase 11 (LLM Engineering — RAG basics), Phase 12 · 05 (LLaVA)
 **Time:** ~180 minutes
 
@@ -95,10 +95,10 @@ No OCR anywhere. Figures, charts, fonts, layout all flow into the answer.
 
 A 50-page financial report with 729 patches per page and 128-dim embeddings:
 
-- ColPali: 50 * 729 * 128 * 4 bytes = ~18 MB raw, ~4 MB after PQ.
+- ColPali: 50 * 729 * 128 * 4 bytes = ~18 MB raw, ~2.3 MB after 8x PQ.
 - Text-RAG: 50 chunks * 768-dim * 4 bytes = ~150 kB.
 
-ColPali is ~30x more storage per document. At scale, OPQ / PQ brings it down to ~5-10x, usually tolerable.
+ColPali is ~120x more storage per document raw. At scale, 8x OPQ / PQ brings it down to ~15x, usually tolerable.
 
 ### When text-RAG still wins
 

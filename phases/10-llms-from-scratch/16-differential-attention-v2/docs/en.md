@@ -3,7 +3,7 @@
 > Softmax attention spreads a small amount of probability over every non-matching token. Over 100k tokens that noise adds up and drowns the signal. Differential Transformer (Ye et al., ICLR 2025) fixes it by computing attention as the difference of two softmaxes, subtracting the shared noise floor. DIFF V2 (Microsoft, January 2026) is the production-stack rewrite: matching decode latency to baseline Transformer, no custom kernels, FlashAttention-compatible. This lesson is V1 to V2 end-to-end, with a working toy implementation of the difference operation you can run in stdlib Python.
 
 **Type:** Build
-**Languages:** Python (stdlib)
+**Languages:** Python (stdlib), Rust
 **Prerequisites:** Phase 7 · 02 (self-attention), Phase 7 · 15 (attention variants), Phase 10 · 14 (architecture walkthrough)
 **Time:** ~60 minutes
 
@@ -16,7 +16,7 @@
 
 ## The Problem
 
-Standard softmax attention has a mathematical property that turns into an operational headache at scale. For a query `q`, the attention weights are `softmax(qK^T / sqrt(d))`. Softmax can never produce exact zeros — every non-matching token gets some positive mass. That residual mass is noise, and it scales with context length. At 128k tokens, even if each non-matching token gets only 0.001% of the probability, 127,999 of them combined contribute about 12% of the total. The model has to learn to route around a noise floor that grows with context.
+Standard softmax attention has a mathematical property that turns into an operational headache at scale. For a query `q`, the attention weights are `softmax(qK^T / sqrt(d))`. Softmax can never produce exact zeros: every non-matching token gets some positive mass. That residual mass is noise, and it scales with context length. At 128k tokens, even if each non-matching token gets only 0.0001% of the probability, 127,999 of them combined contribute about 13% of the total. The model has to learn to route around a noise floor that grows with context.
 
 Empirically this shows up as attention-head interference: hallucinated citations in long-context RAG, lost-in-the-middle failures on 100k-token retrieval tasks, and subtle accuracy degradation on needle-in-haystack benchmarks past 32k. The Differential Transformer paper (arXiv:2410.05258, ICLR 2025) measured the gap: DIFF Transformers hit lower perplexity, higher long-context accuracy, and fewer hallucinations than same-size baselines.
 

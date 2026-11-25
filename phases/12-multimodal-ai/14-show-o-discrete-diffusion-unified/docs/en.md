@@ -3,7 +3,7 @@
 > Transfusion mixes continuous and discrete representations. Show-o (Xie et al., August 2024) goes the other way: text tokens use causal next-token prediction, image tokens use masked discrete diffusion in the spirit of MaskGIT. Both sit inside one transformer with a hybrid attention mask. The result unifies VQA, text-to-image, inpainting, and mixed-modality generation on one backbone, one tokenizer per modality, one loss formulation (next-token extended to masked prediction). This lesson walks the Show-o design — why masked discrete diffusion is a parallel, few-step image generator — and contrasts with Transfusion and Emu3.
 
 **Type:** Learn
-**Languages:** Python (stdlib, masked-discrete-diffusion sampler)
+**Languages:** Python, TypeScript (stdlib, masked-discrete-diffusion sampler)
 **Prerequisites:** Phase 12 · 13 (Transfusion)
 **Time:** ~120 minutes
 
@@ -11,7 +11,7 @@
 
 - Explain masked discrete diffusion: the schedule that masks tokens uniformly then asks the transformer to recover them.
 - Compare parallel image decoding (Show-o, MaskGIT) to autoregressive image decoding (Chameleon, Emu3) on speed and quality.
-- Name the three tasks Show-o handles in one checkpoint: T2I, VQA, image inpainting.
+- Name the four tasks Show-o handles in one checkpoint: text generation, VQA, T2I, image inpainting.
 - Pick a masking schedule (cosine, linear, truncated) and reason about its effect on sample quality.
 
 ## The Problem

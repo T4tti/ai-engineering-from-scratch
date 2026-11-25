@@ -2,7 +2,7 @@
 
 > An unknown is a durable record with its own id and revision chain, and an empty list in any result tells you to check coverage.
 
-The `_percent_change` dossier in `capture/out/10-mcp-09-analyze-function-percent-change-O1.json` lists `"callees": []`. An agent reads that line and writes that the function calls nothing. The record supports less than that. It says which calls Ghidra resolved, and rea has a record type for what is still open. When you finish this section, you can read the fields of a ResidualUnknown, open one with `record_unknown`, and say what an empty list proves.
+The `_percent_change` [dossier](manuals/reverse-engineering-101/capture/out/10-mcp-09-analyze-function-percent-change-O1.json) lists `"callees": []`. An agent reads that line and writes that the function calls nothing. The record supports less than that. It says which calls Ghidra resolved, and rea has a record type for what is still open. When you finish this section, you can read the fields of a ResidualUnknown, open one with `record_unknown`, and say what an empty list proves.
 
 ## What an empty list proves
 
@@ -19,13 +19,13 @@ note: Line 1052 and line 1894 of the file. Everything between them is cut.
 "Resolved reference metadata identifies computed, indirect, external, call, jump, and data edges; unresolved targetless flows remain unknown, and function classifications distinguish thunks and externals.",
 ```
 
-The provider documentation states the same limit in one sentence: "Callers/callees contain only resolved functions." {{ghidra Admitted function-analysis semantics}}
+The provider documentation states the same limit: the caller and callee lists hold only functions that Ghidra resolved {{ghidra Admitted function-analysis semantics}}.
 
-The design rule behind every rea tool is shorter still: "Missing coverage is unknown, not absence." {{design Define the contract}}
+The design rule behind every rea tool is shorter still: missing coverage means unknown, not absent {{design Define the contract}}.
 
 **Relationship coverage:** the field `relationship_coverage` of an Evidence record, which states how complete the caller and callee sets are. Its status is `complete`, `partial`, or `unknown`. A `partial` value lists its limitations and can name the limited direction. An `unknown` value gives a reason. When a provider reports no coverage for `procedure_callers` or `procedure_callees`, rea writes `unknown`. A record of any other operation that reports no coverage has `null`.
 
-Provider caveats stay in `limitations` and do not make the coverage partial. The same contract sets the limit of `complete`: "`complete` means that set was returned without a known read limit; it does not claim every possible runtime edge." {{design Define the contract}}
+Provider caveats stay in `limitations` and do not make the coverage partial. The same contract sets the limit of `complete`. It means that rea returned the set without a known read limit. It does not claim every edge that could occur at runtime {{design Define the contract}}.
 
 One part of the dossier does declare its coverage in numbers. The value flow reports whether it was truncated and how many operations, inputs, and edges it omitted. `inspect-evidence-bundle` repeats those numbers for every dossier in a bundle.
 
@@ -49,7 +49,7 @@ note: One of the eight records. The fields before native_dossier are cut.
 }
 ```
 
-A zero here is a count that rea stands behind. An empty array elsewhere is a count with no such statement. The contract says what those fields are for: "`native_dossier.value_flow` independently reports truncation, unavailable or unknown metadata." {{mcp Tool results}}
+A zero here is a count that rea stands behind. An empty array elsewhere is a count with no such statement. The contract says what those fields are for: `native_dossier.value_flow` reports truncation, unavailable metadata, and unknown metadata on its own {{mcp Tool results}}.
 
 Two other empty lists in the capture carry the same lesson. `rea compare` in `14-compare-bundles.json` lists ten records that are in one bundle only. It classifies every one as `unknown` with the conclusion kind `unresolved_branch`, because a bundle has no marker that says it is complete ([compare](#s-compare-and-compare-functions)). The JavaScript summary view in `15-js-app-view-summary.json` reports `"semantic_unknowns": 118` for a six-file application. It marks the semantic coverage `unknown` ([the application graph](#s-analyze-javascript-application)). [Figure](#fig-5-3) puts the three lists side by side.
 
@@ -101,16 +101,18 @@ id: fig-5-2
 kind: structure
 title: a ResidualUnknown and its revision chain
 claim: An unknown keeps its id across revisions, each revision names the digest of the one before, and each change writes its own Evidence record.
-caption: Read left to right. Revision 1 is the unknown that registerFunctionComparisonTool.ts records for the _total comparison in capture/out/10-mcp-21-compare-functions-total.json. The right column shows the fields that an update_unknown call changes.
+caption: Read left to right. Revision 1 is the unknown that registerFunctionComparisonTool.ts records for the _total comparison in the comparison capture. The right column shows the fields that an update_unknown call changes.
 ```
 
 ## Unknowns that rea opens itself
 
 Agents open unknowns with `record_unknown`, and rea opens some on its own. `compare_functions` records one whenever its status is not `unchanged`. The domain is `function-comparison`. A `changed` comparison gets severity `medium`. Its supporting evidence is the left dossier and the comparison record, and its contradicting evidence is the right dossier, so its first status is `contradicted`.
 
-An `unknown` comparison gets severity `high`, and all three records support it. Each unknown names the comparison and its changed dimensions in `comparison_conclusion_scope`, and an `unknown` comparison adds the dimension `overall`. Both ask for `shipped-artifact` authority and `observed` confidence, and both recommend one probe: `analyze_function`, with the rationale "Capture complete dossiers for both functions under the same target context."
+An `unknown` comparison gets severity `high`, and all three records support it. Each unknown names the comparison in `comparison_conclusion_scope`. A `changed` comparison names its changed dimensions there. An `unknown` comparison names its unknown dimensions and adds the dimension `overall`. Both ask for `shipped-artifact` authority and `observed` confidence, and both recommend one probe: `analyze_function`, with the rationale "Capture complete dossiers for both functions under the same target context."
 
-The capture ran into this rule once. The `_total` comparison in `10-mcp-21-compare-functions-total.json` was `changed`, so the connection that ran it held one unknown from that moment. No file shows it, because both bundle exports ran before any comparison. Every count in the capture therefore reads `"unknowns": 0` or `"unknown_revisions": 0`. The `rea compare` summary keeps separate counters for unknown history, `unknowns_added`, `unknowns_advanced`, and `unknowns_diverged` (`14-compare-bundles.json`), and all of them are zero for the same reason.
+The capture ran into this rule twice. The `_total` comparison in `10-mcp-21-compare-functions-total.json` was `changed`, so it opened a `medium` unknown with status `contradicted`. The `_percent_change` comparison in `10-mcp-20-compare-functions-percent-change.json` was `unknown` on its references dimension. It opened a `high` unknown with status `open`, scoped to `overall` and `references`.
+
+No file shows either record, because both bundle exports ran before any comparison. Every count in the capture therefore reads `"unknowns": 0` or `"unknown_revisions": 0`. The `rea compare` summary keeps separate counters for unknown history, `unknowns_added`, `unknowns_advanced`, and `unknowns_diverged` (`14-compare-bundles.json`), and all of them are zero for the same reason.
 
 Workflow tools do the same when they cannot finish. The user-visible error catalog at the tag lists the question each one records, for example "Does the reconstruction satisfy every declared claim?" for reconstruction verification. [Lesson 35](phases/13-tools-and-protocols/35-evidence-confidence-and-unknowns) builds the same ledger in Python, with the question as the identity and the required authority as the closing condition.
 
@@ -121,4 +123,4 @@ Workflow tools do the same when they cannot finish. The user-visible error catal
 - Close an unknown only with `evidence_ids` of observed records, never with a sentence.
 ```
 
-Sources: capture/out/10-mcp-09-analyze-function-percent-change-O1.json, capture/out/11-inspect-evidence-bundle-O1.json, capture/out/10-mcp-14-export-evidence-bundle-O1.json, capture/out/10-mcp-21-compare-functions-total.json, capture/out/14-compare-bundles.json, capture/out/15-js-app-view-summary.json; phases/13-tools-and-protocols/35-evidence-confidence-and-unknowns; rea 6.5.0 at 3b79af2: src/domain/residualUnknown.ts, src/domain/relationshipCoverage.ts, src/domain/evidence.ts, src/application/binary/BinarySession.ts, src/application/investigation/EvidenceLedger.ts, src/application/investigation/UnknownEvidence.ts, src/server/registerSessionRecordTools.ts, src/server/registerFunctionComparisonTool.ts, src/server/recordDerivedEvidence.ts, docs/user-visible-errors.csv; rea docs/ghidra-provider.md, rea docs/tool-design.md, rea docs/mcp-contracts.md
+Sources: capture/out/10-mcp-09-analyze-function-percent-change-O1.json, capture/out/11-inspect-evidence-bundle-O1.json, capture/out/10-mcp-14-export-evidence-bundle-O1.json, capture/out/10-mcp-20-compare-functions-percent-change.json, capture/out/10-mcp-21-compare-functions-total.json, capture/out/14-compare-bundles.json, capture/out/15-js-app-view-summary.json; phases/13-tools-and-protocols/35-evidence-confidence-and-unknowns; rea 6.7.0 at 27dc42d: src/domain/residualUnknown.ts, src/domain/relationshipCoverage.ts, src/domain/evidence.ts, src/application/binary/BinarySession.ts, src/application/investigation/EvidenceLedger.ts, src/application/investigation/UnknownEvidence.ts, src/server/registerSessionRecordTools.ts, src/server/registerFunctionComparisonTool.ts, src/server/recordDerivedEvidence.ts, docs/user-visible-errors.csv; rea docs/ghidra-provider.md, rea docs/tool-design.md, rea docs/mcp-contracts.md

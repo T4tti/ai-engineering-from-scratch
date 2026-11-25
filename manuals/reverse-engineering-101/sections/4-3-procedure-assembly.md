@@ -103,7 +103,7 @@ Fourteen instructions, the same shape. The multiply is one instruction, `IMUL RA
 
 ## Where the no-return warnings go
 
-`raw_result.limitations` is empty for `_grade`. When a function calls something Ghidra marked as never returning, the scan can stop there, and this list names the call site. On macOS and Linux, rea runs a repair script after the import. It clears wrong no-return flags on six common library names, so the bodies you read here are the repaired ones. The docs state the effect of a flag that stays: "An inferred no-return call can terminate that body before subsequent bytes." {{ghidra §Admitted function-analysis semantics}}
+`raw_result.limitations` is empty for `_grade`. When a function calls something Ghidra marked as never returning, the scan can stop there, and this list names the call site. On macOS and Linux, rea runs a repair script after the import. It clears wrong no-return flags on six common library names, so the bodies you read here are the repaired ones. The docs state the effect of a flag that stays. A call that Ghidra inferred as no-return can end the body before the bytes that follow it {{ghidra §Admitted function-analysis semantics}}.
 
 ```takeaways
 - Read assembly in groups: constants, arithmetic, the compare and branch, the returns.
@@ -112,4 +112,4 @@ Fourteen instructions, the same shape. The multiply is one instruction, `IMUL RA
 - Check `raw_result.limitations` for a terminal call before you trust the body size.
 ```
 
-Sources: capture/out/10-mcp-06-procedure-assembly-grade.json, capture/out/06-function-grade.json, capture/out/06-function-grade-x86_64-O1.json, capture/out/04-inspect-macho.json, capture/fixtures/ledger-arm64-O1, capture/fixtures/ledger.c; rea 6.5.0 at 3b79af2: bridge/ghidra/ReaGhidraBridge.java, src/ghidra/GhidraProviderCapabilities.ts; rea docs/ghidra-provider.md
+Sources: capture/out/10-mcp-06-procedure-assembly-grade.json, capture/out/06-function-grade.json, capture/out/06-function-grade-x86_64-O1.json, capture/out/04-inspect-macho.json, capture/fixtures/ledger-arm64-O1, capture/fixtures/ledger.c; rea 6.7.0 at 27dc42d: bridge/ghidra/ReaGhidraBridge.java, src/ghidra/GhidraProviderCapabilities.ts; rea docs/ghidra-provider.md

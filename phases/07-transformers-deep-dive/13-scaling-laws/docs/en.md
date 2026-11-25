@@ -3,7 +3,7 @@
 > The 2020 Kaplan paper said: bigger model, lower loss. The 2022 Hoffmann paper said: you were under-training. Compute goes into two buckets — parameters and tokens — and the split is not obvious.
 
 **Type:** Learn
-**Languages:** Python
+**Languages:** Python, Rust
 **Prerequisites:** Phase 7 · 05 (Full Transformer), Phase 7 · 07 (GPT)
 **Time:** ~45 minutes
 
@@ -40,12 +40,12 @@ L(N, D) = \frac{A}{N^\alpha} + \frac{B}{D^\beta} + E
 - $E \approx 1.69$, the irreducible loss ceiling.
 - $A \approx 406$, $B \approx 411$.
 
-Two terms trade against each other as you scale. Take the derivative w.r.t. $N$ at fixed compute ($C = 6ND$) and solve:
+Two terms trade against each other as you scale. Take the derivative w.r.t. $N$ at fixed compute ($C = 6ND$) and solve. With the $\alpha$ and $\beta$ above, the exponents come out at about 0.45 for $N$ and 0.55 for $D$, so the exact optimal ratio drifts slowly with budget; `code/main.py` finds it by grid search. The paper's first two fitting approaches, which measure the optimum directly, put both exponents at about 0.5. That gives the empirical rule of a fixed ratio. Set $D = 20N$ in $C = 6ND$ and the rule of thumb reads:
 
 ```math
 \begin{aligned}
-N_{\text{opt}} &\approx 0.6 \times (C/6)^{0.5} \\
-D_{\text{opt}} &\approx 0.6 \times (C/6)^{0.5} \\
+N_{\text{opt}} &\approx 0.22 \times (C/6)^{0.5} \\
+D_{\text{opt}} &\approx 4.5 \times (C/6)^{0.5} \\
 D_{\text{opt}} / N_{\text{opt}} &\approx 20
 \end{aligned}
 ```

@@ -3,7 +3,7 @@
 > Your distance function defines what "similar" means. Choose wrong and everything downstream breaks.
 
 **Type:** Build
-**Language:** Python
+**Languages:** Python, TypeScript
 **Prerequisites:** Phase 1, Lessons 01 (Linear Algebra Intuition), 02 (Vectors, Matrices & Operations)
 **Time:** ~90 minutes
 
@@ -102,7 +102,7 @@ L1 and L2 are special cases of the Lp norm:
 \lVert x \rVert_p = (|x_1|^p + |x_2|^p + \cdots + |x_n|^p)^{1/p}
 ```
 
-Different values of $p$ produce different shaped "unit balls" (the set of all points at distance 1 from the origin):
+Different values of $p$ produce different shaped "unit balls" (the set of all points at distance at most 1 from the origin; the shapes below are their boundaries):
 
 ```
 p=1:    Diamond shape      (corners on axes)
@@ -436,7 +436,7 @@ norm-unit-balls
 
 ### Step 1: All norm and distance functions
 
-See `code/distances.py` for the complete implementation. Every function is built from scratch using only basic Python math.
+See `code/distances.py` for the complete implementation. Every function is built from scratch using only basic Python math. The file `code/distances.ts` is a TypeScript port with the same functions and demos.
 
 ### Step 2: Same data, different distances, different neighbors
 

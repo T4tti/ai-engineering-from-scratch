@@ -3,7 +3,7 @@
 > 2013: Mnih trained one Q-learning network on raw pixels, beat every classical RL agent on seven Atari games. 2015: extended to 49 games, published in Nature, sparked the deep-RL era. DQN is Q-learning plus three tricks that make function approximation stable.
 
 **Type:** Build
-**Languages:** Python
+**Languages:** Python, TypeScript
 **Prerequisites:** Phase 3 · 03 (Backpropagation), Phase 9 · 04 (Q-learning, SARSA)
 **Time:** ~75 minutes
 
@@ -72,7 +72,7 @@ class ReplayBuffer:
         return rng.sample(self.buf, batch)
 ```
 
-~50,000 capacity for Atari; 5,000 suffices for our toy env.
+~10⁶ capacity for Atari, as in the original DQN (it collects 50,000 transitions before learning starts); 5,000 suffices for our toy env.
 
 ### Step 2: a tiny Q-network (manual MLP)
 

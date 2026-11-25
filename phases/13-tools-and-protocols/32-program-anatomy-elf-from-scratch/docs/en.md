@@ -3,7 +3,7 @@
 > A compiled program is a set of tables that point at each other. A reader you wrote gives output you can check byte by byte.
 
 **Type:** Build
-**Languages:** Python (stdlib), C (fixture only)
+**Languages:** Python (stdlib), TypeScript, C (fixture only)
 **Prerequisites:** Phase 0 · 01 (Dev Environment) with clang installed, Python 3.10 or later, hexadecimal arithmetic
 **Time:** ~120 minutes
 
@@ -275,6 +275,7 @@ Run the standard-library reader:
 ```bash
 cd phases/13-tools-and-protocols/32-program-anatomy-elf-from-scratch
 python3 code/main.py
+npx tsx code/main.ts
 ```
 
 The demo reads `ledger-x86_64-O1.o` and prints its header, sections, symbols, relocations, and file offset map. It then prints the four function byte strings, reads `ledger-arm64-O1.o`, and prints the comparison table. It ends with the program headers of `tiny-x86_64`. Expected lines:
@@ -380,6 +381,30 @@ Requirements:
 
 Success means the import list, the segment map, and every function range agree with the captured tool output, with no tool run during the tests.
 
+## Graded Lab
+
+Five questions about the fixtures of this lesson. Find each answer with the code you built, then write it into `code/lab_answers.json`. Write numbers as numbers or as hex strings such as `"0x40"`, and lists as JSON lists.
+
+1. `t1`: e_shoff of ledger-x86_64-O1.o, as a number.
+2. `t2`: st_size of percent_change in ledger-x86_64-O1.o.
+3. `t3`: file offset of .text in ledger-x86_64-O1.o, as hex.
+4. `t4`: relocation type names in ledger-x86_64-O0.o, sorted, as a list.
+5. `t5`: the five int values at .rodata+0x14 in ledger-x86_64-O1.o, as a list.
+
+Check your answers:
+
+```bash
+cd phases/13-tools-and-protocols/32-program-anatomy-elf-from-scratch
+python3 code/lab.py
+npx tsx code/lab.ts
+```
+
+The checker computes each expected value from `code/main.py` on the committed fixtures. It prints `PASS`, `FAIL` or `TODO` for each task and a score, and it exits 0 only when all five pass. `python3 code/lab.py my-answers.json` checks another file. `code/tests/test_lab.py` proves that the checker accepts the right answers and rejects a wrong one.
+
+### See it run
+
+The [Inside a Decompiler](https://aiengineeringfromscratch.com/inside-a-decompiler) machine runs this lesson as its first two stations. The reel reads the header of the object file that holds `percent_change`, and the cabinet opens `.text` and reads the symbol. Switch Symbols off to see which facts the symbol table carried.
+
 ## Lesson Artifact
 
 This lesson produces `outputs/skill-program-anatomy-elf-from-scratch.md`. Use it with Claude, Cursor, Codex, OpenClaw, Hermes, or any agent that reads SKILL.md. The skill turns a compiled object or executable the user built into a layout report. The report gives the file range of every structure, symbol, and relocation, checked against captured tool output.
@@ -391,6 +416,7 @@ Run the demo and the deterministic suite:
 ```bash
 cd phases/13-tools-and-protocols/32-program-anatomy-elf-from-scratch
 python3 code/main.py
+npx tsx code/main.ts
 python3 -m unittest discover -s code/tests -v
 ```
 

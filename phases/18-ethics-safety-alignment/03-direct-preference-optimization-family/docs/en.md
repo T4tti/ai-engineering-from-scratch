@@ -3,7 +3,7 @@
 > Rafailov et al. (2023) showed RLHF's optimum has a closed form in terms of the preference data, so you can skip the explicit reward model and optimize the policy directly. That insight spawned a family — IPO, KTO, SimPO, ORPO, BPO — each fixing a failure mode of DPO. In 2026, direct alignment algorithms ship more frontier post-training runs than PPO. But the over-optimization curve from Lesson 2 still applies: DAAs do not escape Goodhart, they just move where it bites.
 
 **Type:** Learn
-**Languages:** Python (stdlib, six-variant preference-loss comparator)
+**Languages:** Python (stdlib, six-variant preference-loss comparator), TypeScript
 **Prerequisites:** Phase 18 · 01 (InstructGPT), Phase 18 · 02 (Reward hacking), Phase 10 · 08 (DPO basics)
 **Time:** ~75 minutes
 
@@ -53,7 +53,7 @@ What can go wrong:
 
 - The implicit reward gap `beta * (log(pi/pi_ref)_w - log(pi/pi_ref)_l)` is unbounded. A tiny preference can produce an arbitrarily large gap.
 - The loss drives chosen and rejected log-probs in opposite directions. It can push the chosen absolute log-prob down as long as the rejected falls faster. This is the Degraded Chosen Response phenomenon.
-- Out-of-distribution preferences (rare rare pair vs rare rare pair) produce arbitrary implicit rewards.
+- Out-of-distribution preferences (pairs where both responses are rare under the reference policy) produce arbitrary implicit rewards.
 
 ### IPO (Azar et al., 2024)
 

@@ -3,7 +3,7 @@
 > A plain autoencoder compresses then reconstructs. It memorizes. It does not generate. Add one trick — force the code to look Gaussian — and you get a sampler. That single trick, the reparameterization of $z = \mu + \sigma \cdot \epsilon$, is why every latent-diffusion and flow-matching image model you use in 2026 has a VAE at the input.
 
 **Type:** Build
-**Languages:** Python
+**Languages:** Python, TypeScript
 **Prerequisites:** Phase 3 · 02 (Backprop), Phase 3 · 07 (CNNs), Phase 8 · 01 (Taxonomy)
 **Time:** ~75 minutes
 
@@ -99,7 +99,7 @@ That is the generative model. Five lines.
 - **Posterior collapse.** KL term drives $q(z \mid x) \to \mathcal{N}(0, I)$ so aggressively that $z$ carries no info about $x$. Fix: β-annealing (start $\beta=0$, ramp to 1), free bits, or skip the KL on inactive dimensions.
 - **Blurry samples.** The Gaussian decoder likelihood implies MSE reconstruction, which is Bayes-optimal for L2 (the mean) — the mean of a set of plausible digits is a fuzzy digit. Fix: discrete decoder (VQ-VAE, NVAE), or use the VAE only as an encoder and stack diffusion on the latents (this is what Stable Diffusion does).
 - **β too large, too early.** See posterior collapse. Start at $\beta \approx 0.01$ and ramp.
-- **Latent dim too small.** 16-D works for MNIST, 256-D for ImageNet 256², 2048-D for ImageNet 1024². Stable Diffusion's VAE compresses 512×512×3 → 64×64×4 (32x downsample factor in spatial area, 32x in channels).
+- **Latent dim too small.** 16-D works for MNIST, 256-D for ImageNet 256², 2048-D for ImageNet 1024². Stable Diffusion's VAE compresses 512×512×3 → 64×64×4 (8x downsample per side, 64x in spatial area; channels go from 3 to 4, so about 48x fewer values overall).
 
 ## Use It
 
